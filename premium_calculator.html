@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Калькулятор Премии — Фотомеханика</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f11;
+    --surface: #16181c;
+    --surface2: #1e2127;
+    --border: #2a2d35;
+    --accent: #f5a623;
+    --accent2: #e84040;
+    --green: #3ddc84;
+    --text: #e8e9eb;
+    --muted: #6b7280;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --display: 'Bebas Neue', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(245,166,35,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,166,35,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 20px;
+    margin-bottom: 40px;
+  }
+
+  .logo-area h1 {
+    font-family: var(--display);
+    font-size: 52px;
+    letter-spacing: 3px;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .logo-area p {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  .badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-align: right;
+    line-height: 1.8;
+  }
+
+  .badge span {
+    display: block;
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* MAIN GRID */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+  }
+
+  /* PANELS */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .panel-header .num {
+    font-family: var(--display);
+    font-size: 28px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .panel-header .title {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--muted);
+  }
+
+  /* INPUT SECTION */
+  .inputs-body {
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .input-row {
+    display: grid;
+    grid-template-columns: 1fr 160px;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding: 16px 0;
+    gap: 16px;
+    position: relative;
+  }
+
+  .input-row:last-child { border-bottom: none; }
+
+  .input-label {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 400;
+  }
+
+  .input-sublabel {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  .input-control {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 0;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--accent);
+    border-radius: 0;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+
+  input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.3);
+  }
+
+  .value-display {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--accent);
+    min-width: 80px;
+    text-align: right;
+  }
+
+  input[type="number"] {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 16px;
+    padding: 8px 12px;
+    width: 140px;
+    text-align: right;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input[type="number"]:focus { border-color: var(--accent); }
+
+  /* SCORE TAGS */
+  .score-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 0;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+
+  .score-pos { background: rgba(61,220,132,0.15); color: var(--green); border: 1px solid rgba(61,220,132,0.3); }
+  .score-zero { background: rgba(107,114,128,0.15); color: var(--muted); border: 1px solid rgba(107,114,128,0.2); }
+  .score-neg { background: rgba(232,64,64,0.15); color: var(--accent2); border: 1px solid rgba(232,64,64,0.3); }
+
+  /* RIGHT COLUMN */
+  .right-col {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* RESULT PANEL */
+  .result-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .result-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width 0.5s;
+  }
+
+  .result-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .result-amount {
+    font-family: var(--display);
+    font-size: 64px;
+    line-height: 1;
+    color: var(--accent);
+    transition: all 0.3s;
+    letter-spacing: 2px;
+  }
+
+  .result-amount.zero { color: var(--muted); }
+  .result-amount.negative { color: var(--accent2); }
+
+  .result-sub {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  /* SCORE BREAKDOWN */
+  .breakdown {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .breakdown-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.2s;
+  }
+
+  .breakdown-row:last-child { border-bottom: none; }
+  .breakdown-row:hover { background: var(--surface2); }
+
+  .breakdown-row.total {
+    background: var(--surface2);
+    border-top: 2px solid var(--accent);
+  }
+
+  .br-label {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .br-label strong {
+    display: block;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 400;
+  }
+
+  .br-score {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 600;
+    min-width: 60px;
+    text-align: right;
+  }
+
+  .br-score.pos { color: var(--green); }
+  .br-score.zero { color: var(--muted); }
+  .br-score.neg { color: var(--accent2); }
+
+  /* GAUGE */
+  .gauge-wrap {
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .gauge-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .gauge-bar-track {
+    width: 100%;
+    height: 8px;
+    background: var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .gauge-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent), var(--green));
+    transition: width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    min-width: 0;
+  }
+
+  .gauge-marks {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+  }
+
+  .gauge-mark {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+  }
+
+  .gauge-pct {
+    font-family: var(--display);
+    font-size: 40px;
+    color: var(--text);
+    letter-spacing: 2px;
+    margin-top: 12px;
+    transition: color 0.3s;
+  }
+
+  /* FLEX TABLE */
+  .salary-breakdown {
+    padding: 20px 24px;
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .sb-item { }
+
+  .sb-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .sb-value {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  /* CONDITIONS */
+  .conditions {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .cond-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    transition: background 0.2s;
+  }
+
+  .cond-item:last-child { border-bottom: none; }
+
+  .cond-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 0;
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+
+  /* RANGE LABELS */
+  .range-hint {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* ANIMATIONS */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .live-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+    display: inline-block;
+    margin-right: 6px;
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header>
+    <div class="logo-area">
+      <h1>КАЛЬКУЛЯТОР ПРЕМИИ</h1>
+      <p>Механосборочный цех · Фотомеханика</p>
+    </div>
+    <div class="badge">
+      <span><span class="live-dot"></span>LIVE</span>
+      Положение от 01.09.2025<br>
+      Расчёт в реальном времени
+    </div>
+  </header>
+
+  <div class="main-grid">
+
+    <!-- LEFT: INPUTS -->
+    <div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="num">01</div>
+          <div>
+            <div class="title">Параметры сотрудника</div>
+          </div>
+        </div>
+        <div class="inputs-body">
+
+          <!-- Оклад -->
+          <div class="input-row">
+            <div>
+              <div class="input-label">Оклад</div>
+              <div class="input-sublabel">Фиксированная часть, ₽</div>
+            </div>
+            <div class="input-control">
+              <input type="number" id="salary" value="88000" min="0" max="500000" step="1000">
+            </div>
+          </div>
+
+          <!-- Эффективность -->
+          <div class="input-row">
+            <div>
+              <div class="input-label">Среднемесячная эффективность</div>
+              <div class="input-sublabel">Выполнение нормы выработки · Вес: 0,52</div>
+            </div>
+            <div class="input-control">
+              <div class="value-display" id="effVal">100%</div>
+              <input type="range" id="efficiency" min="50" max="150" value="100" step="1"
+                oninput="document.getElementById('effVal').textContent=this.value+'%'; calc()">
+              <div class="range-hint"><span>50%</span><span>150%</span></div>
+              <span class="score-tag score-zero" id="effTag">ОЦЕНКА: 0</span>
+            </div>
+          </div>
+
+          <!-- Явка -->
+          <div class="input-row">
+            <div>
+              <div class="input-label">Процент явки</div>
+              <div class="input-sublabel">Факт.часы / Норма-часы · Влияет на ОЭ при ОЭ > 0</div>
+            </div>
+            <div class="input-control">
+              <div class="value-display" id="presVal">100%</div>
+              <input type="range" id="presence" min="0" max="100" value="100" step="1"
+                oninput="document.getElementById('presVal').textContent=this.value+'%'; calc()">
+              <div class="range-hint"><span>0%</span><span>100%</span></div>
+            </div>
+          </div>
+
+          <!-- Рац предложения -->
+          <div class="input-row">
+            <div>
+              <div class="input-label">Рационализаторские предложения</div>
+              <div class="input-sublabel">Утверждённых за месяц · Вес: 0,08–0,16</div>
+            </div>
+            <div class="input-control">
+              <div class="value-display" id="rpVal">0</div>
+              <input type="range" id="rp" min="0" max="5" value="0" step="1"
+                oninput="document.getElementById('rpVal').textContent=this.value; calc()">
+              <div class="range-hint"><span>0</span><span>5+</span></div>
+              <span class="score-tag score-zero" id="rpTag">ОЦЕНКА: 0</span>
+            </div>
+          </div>
+
+          <!-- Замещение -->
+          <div class="input-row">
+            <div>
+              <div class="input-label">Замещение других должностей</div>
+              <div class="input-sublabel">% нормочасов на замещение · Вес: до 0,16</div>
+            </div>
+            <div class="input-control">
+              <div class="value-display" id="subVal">0%</div>
+              <input type="range" id="substitution" min="0" max="100" value="0" step="5"
+                oninput="document.getElementById('subVal').textContent=this.value+'%'; calc()">
+              <div class="range-hint"><span>0%</span><span>100%</span></div>
+              <span class="score-tag score-zero" id="subTag">ОЦЕНКА: 0</span>
+            </div>
+          </div>
+
+          <!-- Переработки -->
+          <div class="input-row">
+            <div>
+              <div class="input-label">Переработки</div>
+              <div class="input-sublabel">% отработанных часов к норме · Вес: до 0,16</div>
+            </div>
+            <div class="input-control">
+              <div class="value-display" id="otVal">100%</div>
+              <input type="range" id="overtime" min="100" max="200" value="100" step="5"
+                oninput="document.getElementById('otVal').textContent=this.value+'%'; calc()">
+              <div class="range-hint"><span>100%</span><span>200%</span></div>
+              <span class="score-tag score-zero" id="otTag">ОЦЕНКА: 0</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: RESULTS -->
+    <div class="right-col">
+
+      <!-- Main result -->
+      <div class="result-panel">
+        <div class="result-label">Итоговая премия</div>
+        <div class="result-amount" id="bonusAmount">0 ₽</div>
+        <div class="result-sub" id="bonusSub">Итоговая оценка: <strong id="scoreDisplay">0.00</strong> / 1.00</div>
+        <div class="salary-breakdown">
+          <div class="sb-item">
+            <div class="sb-label">Оклад</div>
+            <div class="sb-value" id="sbSalary">88 000 ₽</div>
+          </div>
+          <div class="sb-item">
+            <div class="sb-label">Гибкая часть (15%)</div>
+            <div class="sb-value" id="sbFlex">13 200 ₽</div>
+          </div>
+          <div class="sb-item">
+            <div class="sb-label">Общий заработок</div>
+            <div class="sb-value" id="sbTotal">101 200 ₽</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gauge -->
+      <div class="gauge-wrap">
+        <div class="gauge-label">Реализация потенциала премии</div>
+        <div class="gauge-bar-track">
+          <div class="gauge-bar-fill" id="gaugeFill" style="width:0%"></div>
+        </div>
+        <div class="gauge-marks">
+          <span class="gauge-mark">0%</span>
+          <span class="gauge-mark">25%</span>
+          <span class="gauge-mark">50%</span>
+          <span class="gauge-mark">75%</span>
+          <span class="gauge-mark">100%</span>
+        </div>
+        <div class="gauge-pct" id="gaugePct">0%</div>
+      </div>
+
+      <!-- Score breakdown -->
+      <div class="breakdown">
+        <div class="panel-header" style="padding:10px 16px">
+          <div class="num" style="font-size:20px">02</div>
+          <div class="title">Разбивка оценки</div>
+        </div>
+        <div class="breakdown-row">
+          <div class="br-label">
+            <strong>Эффективность (ОЭ)</strong>
+            Норма выработки × явка
+          </div>
+          <div class="br-score" id="brEff">0.00</div>
+        </div>
+        <div class="breakdown-row">
+          <div class="br-label">
+            <strong>Рац. предложения (РП)</strong>
+            Утверждённые инициативы
+          </div>
+          <div class="br-score" id="brRp">0.00</div>
+        </div>
+        <div class="breakdown-row">
+          <div class="br-label">
+            <strong>Замещение (ОЗ)</strong>
+            % нормочасов на замещение
+          </div>
+          <div class="br-score" id="brSub">0.00</div>
+        </div>
+        <div class="breakdown-row">
+          <div class="br-label">
+            <strong>Переработки (ОП)</strong>
+            % сверх нормы
+          </div>
+          <div class="br-score" id="brOt">0.00</div>
+        </div>
+        <div class="breakdown-row total">
+          <div class="br-label">
+            <strong style="color:var(--accent)">ИТОГО</strong>
+            Макс. = 1.00
+          </div>
+          <div class="br-score pos" id="brTotal" style="font-size:20px">0.00</div>
+        </div>
+      </div>
+
+      <!-- Conditions -->
+      <div class="conditions">
+        <div class="panel-header" style="padding:10px 16px">
+          <div class="num" style="font-size:20px">03</div>
+          <div class="title">Пороговые значения</div>
+        </div>
+        <div class="cond-item"><div class="cond-dot" id="c1" style="background:var(--accent2)"></div>≤85% — штраф −0.52</div>
+        <div class="cond-item"><div class="cond-dot" id="c2" style="background:var(--accent2)"></div>85–95% — штраф −0.26</div>
+        <div class="cond-item"><div class="cond-dot" id="c3" style="background:var(--muted)"></div>95–105% — нейтрально 0</div>
+        <div class="cond-item"><div class="cond-dot" id="c4" style="background:var(--muted)"></div>105–115% — бонус +0.26</div>
+        <div class="cond-item"><div class="cond-dot" id="c5" style="background:var(--muted)"></div>>115% — бонус +0.52</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function fmt(n) {
+  return Math.round(n).toLocaleString('ru-RU') + ' ₽';
+}
+
+function getEffScore(eff) {
+  if (eff <= 85) return -0.52;
+  if (eff <= 95) return -0.26;
+  if (eff <= 105) return 0;
+  if (eff <= 115) return 0.26;
+  return 0.52;
+}
+
+function getRpScore(rp) {
+  if (rp === 0) return 0;
+  if (rp === 1) return 0.08;
+  return 0.16;
+}
+
+function getSubScore(sub) {
+  if (sub === 0) return 0;
+  if (sub <= 25) return 0.04;
+  if (sub <= 50) return 0.08;
+  if (sub <= 75) return 0.12;
+  return 0.16;
+}
+
+function getOtScore(ot) {
+  if (ot <= 100) return 0;
+  if (ot <= 125) return 0.04;
+  if (ot <= 150) return 0.08;
+  if (ot <= 175) return 0.12;
+  return 0.16;
+}
+
+function setScoreClass(el, val) {
+  el.className = 'br-score ' + (val > 0 ? 'pos' : val < 0 ? 'neg' : 'zero');
+}
+
+function setTagClass(el, val) {
+  const cls = val > 0 ? 'score-pos' : val < 0 ? 'score-neg' : 'score-zero';
+  el.className = 'score-tag ' + cls;
+  el.textContent = 'ОЦЕНКА: ' + (val > 0 ? '+' : '') + val.toFixed(2);
+}
+
+function calc() {
+  const salary = parseFloat(document.getElementById('salary').value) || 0;
+  const eff = parseFloat(document.getElementById('efficiency').value);
+  const pres = parseFloat(document.getElementById('presence').value) / 100;
+  const rp = parseInt(document.getElementById('rp').value);
+  const sub = parseFloat(document.getElementById('substitution').value);
+  const ot = parseFloat(document.getElementById('overtime').value);
+
+  // Scores
+  let effScore = getEffScore(eff);
+  if (effScore > 0) effScore = effScore * pres;
+
+  const rpScore = getRpScore(rp);
+  const subScore = getSubScore(sub);
+  const otScore = getOtScore(ot);
+
+  const total = effScore + rpScore + subScore + otScore;
+
+  // Financial
+  const flex = salary * 0.15;
+  const gross = salary + flex;
+  const maxBonus = gross * 0.15;
+  const bonus = Math.max(0, total * gross * 0.15);
+
+  // Update financial display
+  document.getElementById('sbSalary').textContent = fmt(salary);
+  document.getElementById('sbFlex').textContent = fmt(flex);
+  document.getElementById('sbTotal').textContent = fmt(gross);
+
+  // Bonus amount
+  const bonusEl = document.getElementById('bonusAmount');
+  bonusEl.textContent = fmt(bonus);
+  bonusEl.className = 'result-amount' + (bonus === 0 ? ' zero' : '');
+
+  document.getElementById('scoreDisplay').textContent = total.toFixed(2);
+
+  // Gauge
+  const pct = Math.max(0, Math.min(100, (bonus / maxBonus) * 100));
+  document.getElementById('gaugeFill').style.width = pct + '%';
+  document.getElementById('gaugePct').textContent = Math.round(pct) + '%';
+
+  // Breakdown
+  const brEff = document.getElementById('brEff');
+  brEff.textContent = (effScore >= 0 ? '+' : '') + effScore.toFixed(2);
+  setScoreClass(brEff, effScore);
+
+  const brRp = document.getElementById('brRp');
+  brRp.textContent = '+' + rpScore.toFixed(2);
+  setScoreClass(brRp, rpScore);
+
+  const brSub = document.getElementById('brSub');
+  brSub.textContent = '+' + subScore.toFixed(2);
+  setScoreClass(brSub, subScore);
+
+  const brOt = document.getElementById('brOt');
+  brOt.textContent = '+' + otScore.toFixed(2);
+  setScoreClass(brOt, otScore);
+
+  const brTotal = document.getElementById('brTotal');
+  brTotal.textContent = (total >= 0 ? '+' : '') + total.toFixed(2);
+  setScoreClass(brTotal, total);
+
+  // Tags
+  setTagClass(document.getElementById('effTag'), effScore);
+  setTagClass(document.getElementById('rpTag'), rpScore);
+  setTagClass(document.getElementById('subTag'), subScore);
+  setTagClass(document.getElementById('otTag'), otScore);
+
+  // Condition dots
+  const rawEff = getEffScore(eff);
+  const dots = [
+    { id: 'c1', active: eff <= 85 },
+    { id: 'c2', active: eff > 85 && eff <= 95 },
+    { id: 'c3', active: eff > 95 && eff <= 105 },
+    { id: 'c4', active: eff > 105 && eff <= 115 },
+    { id: 'c5', active: eff > 115 },
+  ];
+
+  dots.forEach(d => {
+    const el = document.getElementById(d.id);
+    if (d.active) {
+      el.style.background = d.id === 'c1' || d.id === 'c2' ? 'var(--accent2)' : d.id === 'c3' ? 'var(--muted)' : 'var(--green)';
+      el.style.boxShadow = '0 0 8px currentColor';
+    } else {
+      el.style.background = 'var(--border)';
+      el.style.boxShadow = 'none';
+    }
+  });
+}
+
+document.getElementById('salary').addEventListener('input', calc);
+calc();
+</script>
+</body>
+</html>
