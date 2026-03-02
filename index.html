@@ -503,7 +503,7 @@
           <div class="input-row">
             <div>
               <div class="input-label">Оклад</div>
-              <div class="input-sublabel">Фиксированная часть, ₽</div>
+              <div class="input-sublabel">Итоговая зарплата вкл. гибкую часть, ₽</div>
             </div>
             <div class="input-control">
               <input type="number" id="salary" value="88000" min="0" max="500000" step="1000">
@@ -752,13 +752,16 @@ function calc() {
   const total = effScore + rpScore + subScore + otScore;
 
   // Financial
-  const flex = salary * 0.15;
-  const gross = salary + flex;
+  // salary — это уже итоговая зарплата (оклад + гибкая часть)
+  // Гибкая часть = 15% от итога, значит оклад = salary / 1.15
+  const base = salary / 1.15;
+  const flex = salary - base;
+  const gross = salary; // общий заработок = введённая сумма
   const maxBonus = gross * 0.15;
   const bonus = Math.max(0, total * gross * 0.15);
 
   // Update financial display
-  document.getElementById('sbSalary').textContent = fmt(salary);
+  document.getElementById('sbSalary').textContent = fmt(base);
   document.getElementById('sbFlex').textContent = fmt(flex);
   document.getElementById('sbTotal').textContent = fmt(gross);
 
